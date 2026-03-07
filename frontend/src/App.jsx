@@ -21,30 +21,77 @@ const AdminProtectedRoute = ({ children }) => {
 
 function Navigation() {
   const location = useLocation()
+  const navigate = useNavigate()
   const isAdminPath = location.pathname.includes('admin') || location.pathname.includes('staff')
+  const isAuth = localStorage.getItem('staffAuth') === 'true'
+
+  const handleLogout = () => {
+    localStorage.removeItem('staffAuth')
+    navigate('/staff-login')
+  }
 
   return (
-    <header style={{ textAlign: 'center', marginBottom: '40px', paddingTop: '40px' }}>
+    <header style={{
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      padding: '20px 40px',
+      marginBottom: '40px'
+    }}>
       <Link to="/" style={{ textDecoration: 'none' }}>
-        <h1 style={{ fontSize: '2.5rem', fontWeight: '800', background: 'linear-gradient(90deg, #007AFF, #5856D6)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', letterSpacing: '-0.03em', margin: 0 }}>
+        <h1 style={{
+          fontSize: '1.8rem',
+          fontWeight: '800',
+          background: 'linear-gradient(90deg, #007AFF, #5856D6)',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          letterSpacing: '-0.03em',
+          margin: 0
+        }}>
           LifeLine Hospital
         </h1>
       </Link>
-      <nav style={{ display: 'flex', justifyContent: 'center', gap: '20px', marginTop: '10px' }}>
+
+      <nav style={{ display: 'flex', alignItems: 'center', gap: '25px' }}>
         {!isAdminPath ? (
           <>
-            <Link to="/" style={{ textDecoration: 'none', color: '#007AFF', fontWeight: '600', fontSize: '0.9rem' }}>Home</Link>
-            <Link to="/live-status" style={{ textDecoration: 'none', color: '#5856D6', fontWeight: '600', fontSize: '0.9rem' }}>Live Status</Link>
+            <Link to="/" style={{ textDecoration: 'none', color: '#1d1d1f', fontWeight: '600', fontSize: '0.9rem' }}>Home</Link>
+            <Link to="/live-status" style={{ textDecoration: 'none', color: '#86868b', fontWeight: '600', fontSize: '0.9rem' }}>Live Status</Link>
             <Link to="/patient-login" style={{ textDecoration: 'none', color: '#86868b', fontWeight: '600', fontSize: '0.9rem' }}>Patient Portal</Link>
+            <Link
+              to="/staff-login"
+              style={{
+                textDecoration: 'none',
+                background: 'rgba(0, 122, 255, 0.1)',
+                color: '#007AFF',
+                padding: '8px 16px',
+                borderRadius: '8px',
+                fontWeight: '700',
+                fontSize: '0.85rem'
+              }}
+            >
+              Staff Portal
+            </Link>
           </>
         ) : (
           <>
             <Link to="/" style={{ textDecoration: 'none', color: '#86868b', fontWeight: '600', fontSize: '0.9rem' }}>Patient View</Link>
-            {localStorage.getItem('staffAuth') === 'true' && (
+            {isAuth && (
               <button
-                onClick={() => { localStorage.removeItem('staffAuth'); window.location.href = '/staff-login'; }}
-                style={{ background: 'none', border: 'none', color: '#FF3B30', fontWeight: '600', fontSize: '0.9rem', cursor: 'pointer' }}
-              >Logout Staff</button>
+                onClick={handleLogout}
+                style={{
+                  background: 'rgba(255, 59, 48, 0.1)',
+                  border: 'none',
+                  color: '#FF3B30',
+                  padding: '8px 16px',
+                  borderRadius: '8px',
+                  fontWeight: '700',
+                  fontSize: '0.85rem',
+                  cursor: 'pointer'
+                }}
+              >
+                Logout Staff
+              </button>
             )}
           </>
         )}
