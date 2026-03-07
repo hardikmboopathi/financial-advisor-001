@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import axios from 'axios'
 import { User, LogOut, Calendar, Clock, Trash2, Heart } from 'lucide-react'
 
-const API_URL = 'http://localhost:5001/api'
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api'
 
 function PatientDashboard() {
     const [patient, setPatient] = useState(null)
