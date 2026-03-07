@@ -94,14 +94,32 @@ app.get('/api/doctors', async (req, res) => {
     }
 });
 
-// 2. Update Doctor Status
+// 2. Add New Doctor
+app.post('/api/doctors', async (req, res) => {
+    try {
+        const { name, specialty } = req.body;
+        const newDoc = { name, specialty, status: 'available' };
+        if (useMemoryFallback) {
+            const docWithId = { _id: Date.now().toString(), ...newDoc };
+            doctorsMemory.push(docWithId);
+            return res.status(201).json(docWithId);
+        }
+        const doctor = new Doctor(newDoc);
+        await doctor.save();
+        res.status(201).json(doctor);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// 3. Update Doctor Status
 app.put('/api/doctors/:id/status', async (req, res) => {
     try {
         const { status } = req.body;
         const id = req.params.id;
 
         if (useMemoryFallback) {
-            const index = doctorsMemory.findIndex(d => d._id === id);
+            const index = doctorsMemory.findIndex(d => (d._id || '').toString() === id.toString());
             if (index !== -1) {
                 doctorsMemory[index].status = status;
                 return res.json(doctorsMemory[index]);
@@ -111,6 +129,21 @@ app.put('/api/doctors/:id/status', async (req, res) => {
 
         const doctor = await Doctor.findByIdAndUpdate(id, { status }, { new: true });
         res.json(doctor);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// 4. Delete Doctor
+app.delete('/api/doctors/:id', async (req, res) => {
+    try {
+        const id = req.params.id;
+        if (useMemoryFallback) {
+            doctorsMemory = doctorsMemory.filter(d => (d._id || '').toString() !== id.toString());
+            return res.json({ message: 'Doctor removed' });
+        }
+        await Doctor.findByIdAndDelete(id);
+        res.json({ message: 'Doctor removed' });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -199,7 +232,11 @@ app.post('/api/appointments', async (req, res) => {
 app.get('/api/appointments/today', async (req, res) => {
     try {
         if (useMemoryFallback) {
-            return res.json(patientsMemory.sort((a, b) => a.tokenNumber - b.tokenNumber));
+            const startOfToday = new Date();
+            startOfToday.setHours(0, 0, 0, 0);
+            return res.json(patientsMemory
+                .filter(p => new Date(p.createdAt) >= startOfToday)
+                .sort((a, b) => a.tokenNumber - b.tokenNumber));
         }
 
         const startOfToday = new Date();
